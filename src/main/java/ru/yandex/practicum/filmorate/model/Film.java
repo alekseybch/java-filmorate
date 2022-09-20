@@ -9,18 +9,20 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 @Builder
 public class Film {
     private int id;
-    @NotNull(message = "не может быть null.")
-    @NotBlank(message = "не может быть пустым.")
+    @NotNull(message = "Can't be null.")
+    @NotBlank(message = "Can't be blank.")
     private String name;
-    @Size(max = 200, message = "не должен быть больше 200 символов.")
+    @Size(max = 200, message = "Must not be more than 200 characters.")
     private String description;
     @DateFilmValidate
     private LocalDate releaseDate;
-    @Positive(message = "должен быть положительным числом.")
+    @Positive(message = "Must be a positive number.")
     private int duration;
+    private Set<Integer> likes;
 }

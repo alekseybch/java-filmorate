@@ -12,12 +12,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolationException;
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,13 +39,12 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
-    @ExceptionHandler(value = ConstraintViolationException.class)
-    protected ResponseEntity<Object> constraintViolationException(ConstraintViolationException ex, WebRequest request) {
-        log.error("Constraint error: {}", ex.getMessage(), ex);
-        Map<String, Object> body = getGeneralErrorBody(HttpStatus.BAD_REQUEST, request);
-        List<String> errors = Arrays.stream(ex.getMessage().split(", ")).collect(Collectors.toList());
-        body.put(REASONS, errors);
-        return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    @ExceptionHandler(value = Exception.class)
+    protected ResponseEntity<Object> handleAllException(Exception ex, WebRequest request) {
+        log.error("Error: {}", ex.getMessage(), ex);
+        Map<String, Object> body = getGeneralErrorBody(HttpStatus.INTERNAL_SERVER_ERROR, request);
+        body.put(REASONS, ex.getMessage());
+        return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
 
     @Override
