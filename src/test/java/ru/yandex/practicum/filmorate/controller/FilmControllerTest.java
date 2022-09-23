@@ -14,8 +14,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.DataStorage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -64,11 +63,11 @@ public class FilmControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
-    private FilmStorage filmStorage;
+    private DataStorage<Film> filmStorage;
     @Autowired
     private FilmService filmService;
     @Autowired
-    private UserStorage userStorage;
+    private DataStorage<User> userStorage;
     @Autowired
     private MockMvc mockMvc;
 
@@ -195,7 +194,7 @@ public class FilmControllerTest {
                 .duration(300)
                 .build();
 
-        filmStorage.addFilm(getFilm(0));
+        filmStorage.add(getFilm(0));
         String body = objectMapper.writeValueAsString(updatedFilm);
 
         //when
@@ -223,7 +222,7 @@ public class FilmControllerTest {
                 .duration(300)
                 .build();
 
-        filmStorage.addFilm(getFilm(0));
+        filmStorage.add(getFilm(0));
         String body = objectMapper.writeValueAsString(updatedFilm);
 
         //when
@@ -239,7 +238,7 @@ public class FilmControllerTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenFilmWithId1_whenRequestGetFilms_thenGetAllFilm() throws Exception {
         //given
-        filmStorage.addFilm(getFilm(0));
+        filmStorage.add(getFilm(0));
 
         //when
         this.mockMvc.perform(
@@ -258,7 +257,7 @@ public class FilmControllerTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenFilmWithId1_whenRequestGetFilmId1_thenGetFilmId1() throws Exception {
         //given
-        filmStorage.addFilm(getFilm(0));
+        filmStorage.add(getFilm(0));
 
         //when
         this.mockMvc.perform(
@@ -277,7 +276,7 @@ public class FilmControllerTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenFilmId1_whenRequestGetFilmWithFailId_thenNotFoundRequest404() throws Exception {
         //given
-        filmStorage.addFilm(getFilm(0));
+        filmStorage.add(getFilm(0));
 
         //when
         this.mockMvc.perform(
@@ -292,8 +291,8 @@ public class FilmControllerTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenFilmId1AndUserId1_whenAddLikeToFilmId1FromUserId1_thenAddedLikeOnFilmId1() throws Exception {
         //given
-        filmStorage.addFilm(getFilm(0));
-        userStorage.addUser(getUser(0));
+        filmStorage.add(getFilm(0));
+        userStorage.add(getUser(0));
 
         //when
         this.mockMvc.perform(
@@ -302,7 +301,7 @@ public class FilmControllerTest {
                 //then
                 .andExpect(status().isOk());
 
-        final Set<Integer> likes = filmStorage.getFilmById(1).getLikes();
+        final Set<Integer> likes = filmStorage.getById(1).getLikes();
         assertNotNull(likes, "Likes are not returned.");
         assertEquals(1, likes.size(), "Incorrect number of likes.");
     }
@@ -311,11 +310,11 @@ public class FilmControllerTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenFilmId1With1LikeFromUserId1_whenDeleteLikeFromUserId1_thenDeletedLikeFilmId1() throws Exception {
         //given
-        filmStorage.addFilm(getFilm(0));
-        userStorage.addUser(getUser(0));
+        filmStorage.add(getFilm(0));
+        userStorage.add(getUser(0));
         filmService.addLike(1, 1);
 
-        final Set<Integer> likes = filmStorage.getFilmById(1).getLikes();
+        final Set<Integer> likes = filmStorage.getById(1).getLikes();
         assertNotNull(likes, "Likes are not returned.");
         assertEquals(1, likes.size(), "Incorrect number of likes.");
 
@@ -332,15 +331,14 @@ public class FilmControllerTest {
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void givenFilmId1With1LikeFromUserId1_whenDeleteLikeFromUserFailId_thenNotFoundRequest404() throws Exception {
+    void givenFilmId1With1NoLikeFromUserId1_whenDeleteLikeFromUserFailId_thenNotFoundRequest404() throws Exception {
         //given
-        filmStorage.addFilm(getFilm(0));
-        userStorage.addUser(getUser(0));
-        filmService.addLike(1, 1);
+        filmStorage.add(getFilm(0));
+        userStorage.add(getUser(0));
 
         //when
         this.mockMvc.perform(
-                        delete("/films/1/like/-1"))
+                        delete("/films/1/like/1"))
 
                 //then
                 .andExpect(status().isNotFound())
@@ -351,10 +349,10 @@ public class FilmControllerTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenFilmId1With1LikeAndFilmId2With2Likes_whenRequestGetTop2Films_thenGetTop2Films() throws Exception {
         //given
-        filmStorage.addFilm(getFilm(0));
-        filmStorage.addFilm(getFilm(1));
-        userStorage.addUser(getUser(0));
-        userStorage.addUser(getUser(1));
+        filmStorage.add(getFilm(0));
+        filmStorage.add(getFilm(1));
+        userStorage.add(getUser(0));
+        userStorage.add(getUser(1));
         filmService.addLike(1, 1);
         filmService.addLike(2, 1);
         filmService.addLike(2, 2);

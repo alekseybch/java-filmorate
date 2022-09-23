@@ -12,7 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.DataStorage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ public class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
-    private UserStorage userStorage;
+    private DataStorage<User> userStorage;
     @Autowired
     private UserService userService;
     @Autowired
@@ -179,7 +179,7 @@ public class UserControllerTest {
                 .birthday(BIRTHDAY)
                 .build();
 
-        userStorage.addUser(users.get(0));
+        userStorage.add(users.get(0));
         String body = objectMapper.writeValueAsString(updatedUser);
 
         //when
@@ -207,7 +207,7 @@ public class UserControllerTest {
                 .birthday(BIRTHDAY)
                 .build();
 
-        userStorage.addUser(users.get(0));
+        userStorage.add(users.get(0));
         String body = objectMapper.writeValueAsString(updatedUser);
 
         //when
@@ -223,7 +223,7 @@ public class UserControllerTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenUserId1_whenRequestGetAllUsers_thenGetAllUsers() throws Exception {
         //given
-        userStorage.addUser(users.get(0));
+        userStorage.add(users.get(0));
 
         //when
         this.mockMvc.perform(
@@ -242,7 +242,7 @@ public class UserControllerTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenUserId1_whenRequestGetUserId1_thenGetUserById1() throws Exception {
         //given
-        userStorage.addUser(users.get(0));
+        userStorage.add(users.get(0));
 
         //when
         this.mockMvc.perform(
@@ -261,7 +261,7 @@ public class UserControllerTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenUserId1_whenRequestGetUserFailId_thenNotFoundRequest404() throws Exception {
         //given
-        userStorage.addUser(users.get(0));
+        userStorage.add(users.get(0));
 
         //when
         this.mockMvc.perform(
@@ -274,10 +274,10 @@ public class UserControllerTest {
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void givenUserId1AndUserId2_whenAddFriend_thenAddedFriendId2ToUserId1andAddedFriendId1ToUserId2() throws Exception {
+    void givenUserId1AndUserId2_whenAddFriend_thenAddedFriendId2ToUserId1AndAddedFriendId1ToUserId2() throws Exception {
         //given
-        userStorage.addUser(users.get(0));
-        userStorage.addUser(users.get(1));
+        userStorage.add(users.get(0));
+        userStorage.add(users.get(1));
 
         //when
         this.mockMvc.perform(
@@ -286,11 +286,11 @@ public class UserControllerTest {
                 //then
                 .andExpect(status().isOk());
 
-        final Set<Integer> friends = userStorage.getUserById(1).getFriends();
+        final Set<Integer> friends = userStorage.getById(1).getFriends();
         assertNotNull(friends, "Friends are not returned.");
         assertEquals(1, friends.size(), "Incorrect number of friends.");
 
-        final Set<Integer> friendFriends = userStorage.getUserById(2).getFriends();
+        final Set<Integer> friendFriends = userStorage.getById(2).getFriends();
         assertNotNull(friendFriends, "Friends are not returned.");
         assertEquals(1, friendFriends.size(), "Incorrect number of friends.");
     }
@@ -299,7 +299,7 @@ public class UserControllerTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenUserId1_whenAddFriendWithFailId_thenNotFoundRequest404() throws Exception {
         //given
-        userStorage.addUser(users.get(0));
+        userStorage.add(users.get(0));
 
         //when
         this.mockMvc.perform(
@@ -314,17 +314,17 @@ public class UserControllerTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenUserId1WithFriendId3AndUserId2WithFriendId3_whenRequestGetCommonFriendUserId1AndUserId2_thenGetCommonFriend() throws Exception {
         //given
-        userStorage.addUser(users.get(0));
-        userStorage.addUser(users.get(1));
-        userStorage.addUser(users.get(2));
+        userStorage.add(users.get(0));
+        userStorage.add(users.get(1));
+        userStorage.add(users.get(2));
         userService.addFriend(1, 3);
         userService.addFriend(2, 3);
 
-        final Set<Integer> friends = userStorage.getUserById(1).getFriends();
+        final Set<Integer> friends = userStorage.getById(1).getFriends();
         assertNotNull(friends, "Friends are not returned.");
         assertEquals(1, friends.size(), "Incorrect number of friends.");
 
-        final Set<Integer> friendFriends = userStorage.getUserById(2).getFriends();
+        final Set<Integer> friendFriends = userStorage.getById(2).getFriends();
         assertNotNull(friendFriends, "Friends are not returned.");
         assertEquals(1, friendFriends.size(), "Incorrect number of friends.");
 
@@ -345,15 +345,15 @@ public class UserControllerTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenUserId1WithFriendId2_whenDeleteFriend_thenDeletedFriend() throws Exception {
         //given
-        userStorage.addUser(users.get(0));
-        userStorage.addUser(users.get(1));
+        userStorage.add(users.get(0));
+        userStorage.add(users.get(1));
         userService.addFriend(1, 2);
 
-        final Set<Integer> friends = userStorage.getUserById(1).getFriends();
+        final Set<Integer> friends = userStorage.getById(1).getFriends();
         assertNotNull(friends, "Friends are not returned.");
         assertEquals(1, friends.size(), "Incorrect number of friends.");
 
-        final Set<Integer> friendFriends = userStorage.getUserById(2).getFriends();
+        final Set<Integer> friendFriends = userStorage.getById(2).getFriends();
         assertNotNull(friendFriends, "Friends are not returned.");
         assertEquals(1, friendFriends.size(), "Incorrect number of friends.");
 
@@ -375,8 +375,8 @@ public class UserControllerTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenUserId1AndUserId2NotFriends_whenDeleteFriendWithFailId_thenNotFoundRequest404() throws Exception {
         //given
-        userStorage.addUser(users.get(0));
-        userStorage.addUser(users.get(1));
+        userStorage.add(users.get(0));
+        userStorage.add(users.get(1));
 
         //when
         this.mockMvc.perform(

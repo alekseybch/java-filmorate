@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Builder;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.validator.DateFilmValidate;
 
 import javax.validation.constraints.NotBlank;
@@ -9,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -24,5 +26,15 @@ public class Film {
     private LocalDate releaseDate;
     @Positive(message = "Must be a positive number.")
     private int duration;
-    private Set<Integer> likes;
+    private final Set<Integer> likes = new HashSet<>();
+
+    public void addLike(Integer id) {
+        likes.add(id);
+    }
+
+    public void deleteLike(Integer id) {
+        if (!likes.remove(id)) {
+            throw new NotFoundException(String.format("Like with id = %d not found", id));
+        }
+    }
 }

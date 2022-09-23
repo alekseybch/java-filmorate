@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -17,19 +16,18 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserStorage userStorage;
     private final UserService userService;
 
     @GetMapping
     public Collection<User> findAll() {
         log.info("/users GET - request received");
-        return userStorage.getAllUsers();
+        return userService.getAll();
     }
 
     @GetMapping("/{id}")
     public User findUser(@PathVariable int id) {
         log.info("/users/{id} GET - request to receive a user has been received id = {}", id);
-        return userStorage.getUserById(id);
+        return userService.getById(id);
     }
 
     @GetMapping("/{id}/friends")
@@ -49,7 +47,7 @@ public class UserController {
     @PostMapping
     public User create(@RequestBody @Valid @NotNull User user) {
         log.info("/users POST - request received {}", user);
-        userStorage.addUser(user);
+        userService.add(user);
         log.info("User id = {} is created {}", user.getId(), user);
         return user;
     }
@@ -57,7 +55,7 @@ public class UserController {
     @PutMapping
     public User put(@RequestBody @Valid @NotNull User user) {
         log.info("/users PUT - request received {}", user);
-        userStorage.updateUser(user);
+        userService.update(user);
         log.info("User id = {} is uprated {}", user.getId(), user);
         return user;
     }

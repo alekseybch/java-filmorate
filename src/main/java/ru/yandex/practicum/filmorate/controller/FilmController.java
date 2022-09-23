@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -16,19 +15,19 @@ import java.util.Collection;
 @RequestMapping("/films")
 @RequiredArgsConstructor
 public class FilmController {
-    private final FilmStorage filmStorage;
+
     private final FilmService filmService;
 
     @GetMapping
     public Collection<Film> findAll() {
         log.info("/films GET request received");
-        return filmStorage.getAllFilms();
+        return filmService.getAll();
     }
 
     @GetMapping("/{id}")
     public Film findFilm(@PathVariable int id) {
         log.info("/films/{id} GET - request to receive a film has been received id = {}", id);
-        return filmStorage.getFilmById(id);
+        return filmService.getById(id);
     }
 
     @GetMapping("/popular")
@@ -40,7 +39,7 @@ public class FilmController {
     @PostMapping
     public Film create(@RequestBody @Valid @NotNull Film film) {
         log.info("/films POST request received {}", film);
-        filmStorage.addFilm(film);
+        filmService.add(film);
         log.info("Film is created - {}", film);
         return film;
     }
@@ -48,7 +47,7 @@ public class FilmController {
     @PutMapping
     public Film put(@RequestBody @Valid @NotNull Film film) {
         log.info("/films PUT request received {}", film);
-        filmStorage.updateFilm(film);
+        filmService.update(film);
         log.info("Film is updated {}", film);
         return film;
     }

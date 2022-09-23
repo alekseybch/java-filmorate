@@ -8,6 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
@@ -31,20 +32,22 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
     private static final String PATH = "path";
     private static final String REASONS = "reasons";
 
-    @ExceptionHandler(value = NotFoundException.class)
-    protected ResponseEntity<Object> handleNotFound(NotFoundException ex, WebRequest request) {
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(NotFoundException.class)
+    protected Map<String, Object> handleNotFound(NotFoundException ex, WebRequest request) {
         log.error("Not found error: {}", ex.getMessage(), ex);
-        Map<String, Object> body = getGeneralErrorBody(HttpStatus.NOT_FOUND, request);
-        body.put(REASONS, ex.getMessage());
-        return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+        Map<String, Object> responseBody = getGeneralErrorBody(HttpStatus.NOT_FOUND, request);
+        responseBody.put(REASONS, ex.getMessage());
+        return responseBody;
     }
 
-    @ExceptionHandler(value = Exception.class)
-    protected ResponseEntity<Object> handleAllException(Exception ex, WebRequest request) {
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(Exception.class)
+    protected Map<String, Object> handleAllException(final Exception ex, WebRequest request) {
         log.error("Error: {}", ex.getMessage(), ex);
-        Map<String, Object> body = getGeneralErrorBody(HttpStatus.INTERNAL_SERVER_ERROR, request);
-        body.put(REASONS, ex.getMessage());
-        return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+        Map<String, Object> responseBody = getGeneralErrorBody(HttpStatus.NOT_FOUND, request);
+        responseBody.put(REASONS, ex.getMessage());
+        return responseBody;
     }
 
     @Override
