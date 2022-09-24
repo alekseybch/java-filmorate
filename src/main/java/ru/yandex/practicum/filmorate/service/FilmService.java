@@ -1,38 +1,52 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.DataStorage;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class FilmService {
-    private final Map<Integer, Film> films = new HashMap<>();
-    private int id = 0;
 
-    private int generateId() {
-        return ++id;
+    private final DataStorage<Film> filmStorage;
+    private final DataStorage<User> userStorage;
+
+    public void add(Film film) {
+        filmStorage.add(film);
     }
 
-    public void addFilm(Film film) {
-        int id = generateId();
-        film.setId(id);
-
-        films.put(id, film);
+    public void update(Film film) {
+        filmStorage.update(film);
     }
 
-    public Collection<Film> getAllFilms() {
-        return films.values();
+    public Film getById(int id) {
+        return filmStorage.getById(id);
     }
 
-    public void updateFilm(Film film) {
-        if (films.containsKey(film.getId())) {
-            films.put(film.getId(), film);
-        } else {
-            throw new NotFoundException("фильм не найден.");
-        }
+    public Collection<Film> getAll() {
+        return filmStorage.getAll();
+    }
+
+    public void addLike(int filmId, int userId) {
+        userStorage.getById(userId); //проверить наличие пользователя
+        filmStorage.getById(filmId).addLike(userId);
+    }
+
+    public void deleteLike(int filmId, int userId) {
+        userStorage.getById(userId); //проверить наличие пользователя
+        filmStorage.getById(filmId).deleteLike(userId);
+    }
+
+    public Collection<Film> getTopFilms(int count) {
+        if (count <= 0) throw new IllegalArgumentException(String.format("Must be positive. count = %d", count));
+        return filmStorage.getAll().stream()
+                .sorted((o1, o2) -> o2.getLikes().size() - o1.getLikes().size())
+                .limit(count)
+                .collect(Collectors.toList());
     }
 }
