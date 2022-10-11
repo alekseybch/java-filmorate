@@ -51,8 +51,9 @@ public class UserService {
     }
 
     public Collection<User> commonFriends(int userId, int otherId) {
+        Set<Integer> otherUser = userStorage.getById(otherId).getFriends();
         return userStorage.getById(userId).getFriends().stream()
-                .filter(userStorage.getById(otherId).getFriends()::contains)
+                .filter(otherUser::contains)
                 .map(userStorage::getById)
                 .collect(Collectors.toList());
     }
