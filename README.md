@@ -57,7 +57,7 @@
 ### Получить информацию о пользователях старше 18 лет
 SELECT *\
 FROM users\
-WHERE birthday < '20041011';
+WHERE birthday <= SUBDATE(NOW(), INTERVAL 18 YEAR);
 
 ### Информация о фильмах с рейтингом NC-17
 SELECT f.name\
