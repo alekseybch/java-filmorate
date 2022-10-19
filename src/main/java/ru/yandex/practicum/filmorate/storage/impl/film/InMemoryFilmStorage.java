@@ -9,9 +9,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
+@Component("inMemoryFilmStorage")
 public class InMemoryFilmStorage implements DataStorage<Film> {
-
     private final Map<Integer, Film> films = new HashMap<>();
     private int id = 0;
 
@@ -40,13 +39,10 @@ public class InMemoryFilmStorage implements DataStorage<Film> {
 
     @Override
     public void update(Film film) {
-        if (films.containsKey(film.getId())) {
-            for (Integer userId: films.get(film.getId()).getLikes()) {
-                film.addLike(userId);
-            }
-            films.put(film.getId(), film);
-        } else {
-            throw new NotFoundException(String.format("Film with id = %d not found.", film.getId()));
+        getById(film.getId());
+        for (Integer userId: films.get(film.getId()).getLikes()) {
+            film.addLike(userId);
         }
+        films.put(film.getId(), film);
     }
 }

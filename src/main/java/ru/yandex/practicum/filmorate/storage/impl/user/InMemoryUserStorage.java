@@ -3,15 +3,14 @@ package ru.yandex.practicum.filmorate.storage.impl.user;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.DataStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
-public class InMemoryUserStorage implements DataStorage<User> {
-
+@Component("inMemoryUserStorage")
+public class InMemoryUserStorage implements UserStorage {
     private final Map<Integer, User> users = new HashMap<>();
     private int id = 0;
 
@@ -23,7 +22,7 @@ public class InMemoryUserStorage implements DataStorage<User> {
     public void add(User user) {
         int id = generateId();
         user.setId(id);
-        userCheckName(user);
+        user.checkName();
         users.put(id, user);
     }
 
@@ -42,19 +41,16 @@ public class InMemoryUserStorage implements DataStorage<User> {
 
     @Override
     public void update(User user) {
-        if (!users.containsKey(user.getId())) {
-            throw new NotFoundException(String.format("User with id = %d not found.", user.getId()));
-        }
-        userCheckName(user);
+        getById(user.getId());
+        user.checkName();
         for (Integer friendId: users.get(user.getId()).getFriends()) {
             user.addFriend(friendId);
         }
         users.put(user.getId(), user);
     }
 
-    private void userCheckName(User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
+    @Override
+    public void saveFriends(User user) {
+        users.put(user.getId(), user);
     }
 }

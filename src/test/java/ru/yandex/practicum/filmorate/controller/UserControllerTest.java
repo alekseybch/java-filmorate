@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.DataStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -53,7 +54,8 @@ public class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
-    private DataStorage<User> userStorage;
+    @Qualifier("userDbStorage")
+    private UserStorage userStorage;
     @Autowired
     private UserService userService;
     @Autowired
@@ -289,10 +291,6 @@ public class UserControllerTest {
         final Set<Integer> friends = userStorage.getById(1).getFriends();
         assertNotNull(friends, "Friends are not returned.");
         assertEquals(1, friends.size(), "Incorrect number of friends.");
-
-        final Set<Integer> friendFriends = userStorage.getById(2).getFriends();
-        assertNotNull(friendFriends, "Friends are not returned.");
-        assertEquals(1, friendFriends.size(), "Incorrect number of friends.");
     }
 
     @Test
@@ -349,13 +347,9 @@ public class UserControllerTest {
         userStorage.add(users.get(1));
         userService.addFriend(1, 2);
 
-        final Set<Integer> friends = userStorage.getById(1).getFriends();
+        Set<Integer> friends = userStorage.getById(1).getFriends();
         assertNotNull(friends, "Friends are not returned.");
         assertEquals(1, friends.size(), "Incorrect number of friends.");
-
-        final Set<Integer> friendFriends = userStorage.getById(2).getFriends();
-        assertNotNull(friendFriends, "Friends are not returned.");
-        assertEquals(1, friendFriends.size(), "Incorrect number of friends.");
 
         //when
         this.mockMvc.perform(
@@ -364,11 +358,9 @@ public class UserControllerTest {
                 //then
                 .andExpect(status().isOk());
 
+        friends = userStorage.getById(1).getFriends();
         assertNotNull(friends, "Friends are not returned.");
         assertEquals(0, friends.size(), "Incorrect number of friends.");
-
-        assertNotNull(friendFriends, "Friends are not returned.");
-        assertEquals(0, friendFriends.size(), "Incorrect number of friends.");
     }
 
     @Test

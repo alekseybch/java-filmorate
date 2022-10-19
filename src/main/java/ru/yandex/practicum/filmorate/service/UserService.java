@@ -1,52 +1,40 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.DataStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
-public class UserService {
+public class UserService extends AbstractService<User> {
+    private final UserStorage userStorage;
 
-    private final DataStorage<User> userStorage;
-
-    public void add(User user) {
-        userStorage.add(user);
-    }
-
-    public void update(User user) {
-        userStorage.update(user);
-    }
-
-    public User getById(int id) {
-        return userStorage.getById(id);
-    }
-
-    public Collection<User> getAll() {
-        return userStorage.getAll();
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+        super(userStorage);
+        this.userStorage = userStorage;
     }
 
     public void addFriend(int userId, int friendId) {
-        User user = userStorage.getById(userId);
-        User userFriend = userStorage.getById(friendId);
+        User user = getById(userId);
+        getById(friendId); // check friend
         user.addFriend(friendId);
-        userFriend.addFriend(userId);
+        userStorage.saveFriends(user);
     }
 
     public void deleteFriend(int userId, int friendId) {
-        User user = userStorage.getById(userId);
-        User userFriend = userStorage.getById(friendId);
+        User user = getById(userId);
+        getById(friendId);
         user.deleteFriend(friendId);
-        userFriend.deleteFriend(userId);
+        userStorage.saveFriends(user);
     }
 
     public Collection<User> getFriends(int userId) {
         return userStorage.getById(userId).getFriends().stream()
-                .map(userStorage::getById)
+                .map(this::getById)
                 .collect(Collectors.toList());
     }
 
