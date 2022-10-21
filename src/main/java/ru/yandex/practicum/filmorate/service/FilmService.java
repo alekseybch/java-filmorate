@@ -6,9 +6,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 @Service
 public class FilmService extends AbstractService<Film>{
@@ -26,21 +24,20 @@ public class FilmService extends AbstractService<Film>{
         userStorage.getById(userId); // check user
         Film film = getById(filmId);
         film.addLike(userId);
-        filmStorage.saveLikes(film);
+        filmStorage.addLike(filmId, userId);
+        update(film);
     }
 
     public void deleteLike(int filmId, int userId) {
         userStorage.getById(userId); // check user
         Film film = getById(filmId);
         film.deleteLike(userId);
-        filmStorage.saveLikes(film);
+        filmStorage.deleteLike(filmId, userId);
+        update(film);
     }
 
     public Collection<Film> getTopFilms(int count) {
         if (count <= 0) throw new IllegalArgumentException(String.format("Must be positive count = %d", count));
-        return filmStorage.getAll().stream()
-                .sorted((o1, o2) -> o2.getLikes().size() - o1.getLikes().size())
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getTopFilms(count);
     }
 }

@@ -1,11 +1,3 @@
-DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS films CASCADE;
-DROP TABLE IF EXISTS friendships CASCADE;
-DROP TABLE IF EXISTS movies_genres CASCADE;
-DROP TABLE IF EXISTS movies_likes CASCADE;
-DROP TABLE IF EXISTS mpa_ratings CASCADE;
-DROP TABLE IF EXISTS genres CASCADE;
-
 CREATE TABLE IF NOT EXISTS users
 (
     user_id int PRIMARY KEY AUTO_INCREMENT NOT NULL,
@@ -42,21 +34,21 @@ CREATE TABLE IF NOT EXISTS genres
 
 CREATE TABLE IF NOT EXISTS friendships
 (
-    user_id int REFERENCES users(user_id) NOT NULL,
-    friend_id int REFERENCES users(user_id) NOT NULL,
+    user_id int REFERENCES users(user_id) ON DELETE CASCADE NOT NULL,
+    friend_id int REFERENCES users(user_id) ON DELETE CASCADE NOT NULL,
     PRIMARY KEY (user_id, friend_id)
 );
 
 CREATE TABLE IF NOT EXISTS movies_likes
 (
-    film_id int REFERENCES films(film_id) NOT NULL,
-    user_id int REFERENCES users(user_id) NOT NULL,
+    film_id int REFERENCES films(film_id) ON DELETE CASCADE NOT NULL,
+    user_id int REFERENCES users(user_id) ON DELETE CASCADE NOT NULL,
     PRIMARY KEY (film_id, user_id)
 );
 
 CREATE TABLE IF NOT EXISTS movies_genres
 (
-    film_id int REFERENCES films(film_id) NOT NULL,
-    genre_id int REFERENCES genres(genre_id) NOT NULL,
+    film_id int REFERENCES films(film_id) ON DELETE CASCADE NOT NULL,
+    genre_id int REFERENCES genres(genre_id) ON DELETE CASCADE NOT NULL,
     PRIMARY KEY (film_id, genre_id)
 );

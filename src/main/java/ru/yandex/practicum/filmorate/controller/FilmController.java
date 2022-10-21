@@ -60,6 +60,13 @@ public class FilmController {
         log.info("Film id = {} has a like added from user id = {}", id, userId);
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteFilm(@PathVariable int id) {
+        log.info("/films Delete - request to delete a film received id = {}", id);
+        filmService.delete(id);
+        log.info("Film id = {} deleted", id);
+    }
+
     @DeleteMapping("/{id}/like/{userId}")
     public void deleteLike(@PathVariable int id,
                            @PathVariable int userId) {

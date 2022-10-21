@@ -1,12 +1,12 @@
-INSERT INTO genres (genre_name) VALUES ('Комедия');
-INSERT INTO genres (genre_name) VALUES ('Драма');
-INSERT INTO genres (genre_name) VALUES ('Мультфильм');
-INSERT INTO genres (genre_name) VALUES ('Триллер');
-INSERT INTO genres (genre_name) VALUES ('Документальный');
-INSERT INTO genres (genre_name) VALUES ('Боевик');
+MERGE INTO genres (genre_id, genre_name) VALUES (1, 'Комедия');
+MERGE INTO genres (genre_id, genre_name) VALUES (2, 'Драма');
+MERGE INTO genres (genre_id, genre_name) VALUES (3, 'Мультфильм');
+MERGE INTO genres (genre_id, genre_name) VALUES (4, 'Триллер');
+MERGE INTO genres (genre_id, genre_name) VALUES (5, 'Документальный');
+MERGE INTO genres (genre_id, genre_name) VALUES (6, 'Боевик');
 
-INSERT INTO mpa_ratings (mpa_name, mpa_description) VALUES ('G', 'у фильма нет возрастных ограничений');
-INSERT INTO mpa_ratings (mpa_name, mpa_description) VALUES ('PG', 'детям рекомендуется смотреть фильм с родителями');
-INSERT INTO mpa_ratings (mpa_name, mpa_description) VALUES ('PG-13', 'детям до 13 лет просмотр не желателен');
-INSERT INTO mpa_ratings (mpa_name, mpa_description) VALUES ('R', 'лицам до 17 лет просматривать фильм можно только в присутствии взрослого');
-INSERT INTO mpa_ratings (mpa_name, mpa_description) VALUES ('NC-17', 'лицам до 18 лет просмотр запрещён');
+MERGE INTO mpa_ratings (mpa_id, mpa_name, mpa_description) VALUES (1, 'G', 'у фильма нет возрастных ограничений');
+MERGE INTO mpa_ratings (mpa_id, mpa_name, mpa_description) VALUES (2, 'PG', 'детям рекомендуется смотреть фильм с родителями');
+MERGE INTO mpa_ratings (mpa_id, mpa_name, mpa_description) VALUES (3, 'PG-13', 'детям до 13 лет просмотр не желателен');
+MERGE INTO mpa_ratings (mpa_id, mpa_name, mpa_description) VALUES (4, 'R', 'лицам до 17 лет просматривать фильм можно только в присутствии взрослого');
+MERGE INTO mpa_ratings (mpa_id, mpa_name, mpa_description) VALUES (5, 'NC-17', 'лицам до 18 лет просмотр запрещён');

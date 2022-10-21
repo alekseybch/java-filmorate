@@ -8,6 +8,8 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component("inMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
@@ -50,7 +52,33 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void saveFriends(User user) {
-        users.put(user.getId(), user);
+    public void delete(int id) {
+        users.remove(id);
+    }
+
+    @Override
+    public void addFriend(int userId, int friendId) {
+        getById(userId).addFriend(friendId);
+    }
+
+    @Override
+    public void deleteFriend(int userId, int friendId) {
+        getById(userId).deleteFriend(friendId);
+    }
+
+    @Override
+    public Collection<User> getFriends(int id) {
+        return getById(id).getFriends().stream()
+                .map(this::getById)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<User> commonFriends(int userId, int otherId) {
+        Set<Integer> otherUser = getById(otherId).getFriends();
+        return getById(userId).getFriends().stream()
+                .filter(otherUser::contains)
+                .map(this::getById)
+                .collect(Collectors.toList());
     }
 }

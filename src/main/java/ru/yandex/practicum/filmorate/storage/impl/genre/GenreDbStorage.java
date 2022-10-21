@@ -15,8 +15,8 @@ import java.util.List;
 @Repository("genreDbStorage")
 @RequiredArgsConstructor
 public class GenreDbStorage implements DataStorage<Genre> {
-    private static final String SQL_GET_GENRE_BY_ID = "SELECT genre_id, genre_name FROM genres WHERE genre_id = ?";
-    private static final String SQL_GET_ALL_GENRES = "SELECT genre_id, genre_name FROM genres";
+    private static final String SQL_GET_GENRE_BY_ID = "SELECT * FROM genres WHERE genre_id = ?";
+    private static final String SQL_GET_ALL_GENRES = "SELECT * FROM genres";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -40,6 +40,10 @@ public class GenreDbStorage implements DataStorage<Genre> {
 
     @Override
     public void update(Genre genre) {
+    }
+
+    @Override
+    public void delete(int id) {
     }
 
     private Genre mapRowToGenre(ResultSet resultSet, int rowNum) throws SQLException {

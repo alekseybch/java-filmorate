@@ -25,12 +25,17 @@ public class UserDbStorage implements UserStorage {
             "VALUES (?, ?, ?, ?)";
     private static final String SQL_UPDATE_USER = "UPDATE users SET email = ?, login = ?, user_name = ?, birthday = ? " +
             "WHERE user_id = ?";
-    private static final String SQL_GET_USER_BY_ID = "SELECT user_id, email, login, user_name, birthday " +
-            "FROM users WHERE user_id = ?";
-    private static final String SQL_GET_ALL_USERS = "SELECT user_id, email, login, user_name, birthday FROM users";
-    private static final String SQL_GET_ALL_FRIENDS = "SELECT friend_id FROM friendships WHERE user_id = ?";
+    private static final String SQL_DELETE_USER = "DELETE FROM users WHERE user_id = ?";
+    private static final String SQL_GET_USER_BY_ID = "SELECT * FROM users WHERE user_id = ?";
+    private static final String SQL_GET_ALL_USERS = "SELECT * FROM users";
+    private static final String SQL_GET_ALL_FRIENDS = "SELECT u.* FROM friendships AS f LEFT JOIN users AS u " +
+            "ON f.friend_id = u.user_id WHERE f.user_id = ?";
+    private static final String SQL_GET_ALL_FRIENDS_ID = "SELECT friend_id FROM friendships WHERE user_id = ?";
     private static final String SQL_ADD_FRIEND = "INSERT INTO friendships (user_id, friend_id) VALUES (?, ?)";
-    private static final String SQL_DELETE_FRIENDS = "DELETE FROM friendships WHERE user_id = ?";
+    private static final String SQL_DELETE_FRIEND = "DELETE FROM friendships WHERE user_id = ? AND friend_id = ?";
+    private static final String SQL_GET_COMMON_FRIENDS = "SELECT u.* FROM friendships AS f LEFT JOIN users AS u " +
+            "ON f.friend_id = u.user_id WHERE f.user_id = ? INTERSECT SELECT u.* FROM friendships AS f " +
+            "LEFT JOIN users AS u ON f.friend_id = u.user_id WHERE f.user_id = ?";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -79,15 +84,36 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public void saveFriends(User user) {
-        jdbcTemplate.update(SQL_DELETE_FRIENDS, user.getId());
-        for (Integer friendId : user.getFriends()) {
-            jdbcTemplate.update(SQL_ADD_FRIEND, user.getId(), friendId);
-        }
+    public void delete(int id) {
+        getById(id);
+        jdbcTemplate.update(SQL_DELETE_USER, id);
     }
 
-    private void getFriends(User user) {
-        SqlRowSet friends = jdbcTemplate.queryForRowSet(SQL_GET_ALL_FRIENDS, user.getId());
+    @Override
+    public void addFriend(int userId, int friendId) {
+        jdbcTemplate.update(SQL_ADD_FRIEND, userId, friendId);
+    }
+
+    @Override
+    public void deleteFriend(int userId, int friendId) {
+        jdbcTemplate.update(SQL_DELETE_FRIEND, userId, friendId);
+    }
+
+    @Override
+    public Collection<User> getFriends(int id) {
+        getById(id);
+        return jdbcTemplate.query(SQL_GET_ALL_FRIENDS, this::mapRowToUser, id);
+    }
+
+    @Override
+    public Collection<User> commonFriends(int userId, int otherId) {
+        getById(userId);
+        getById(otherId);
+        return jdbcTemplate.query(SQL_GET_COMMON_FRIENDS, this::mapRowToUser, userId, otherId);
+    }
+
+    private void getFriendsId(User user) {
+        SqlRowSet friends = jdbcTemplate.queryForRowSet(SQL_GET_ALL_FRIENDS_ID, user.getId());
         while (friends.next()) {
             user.addFriend(friends.getInt("friend_id"));
         }
@@ -101,7 +127,7 @@ public class UserDbStorage implements UserStorage {
                 .name(resultSet.getString("user_name"))
                 .birthday(resultSet.getDate("birthday").toLocalDate())
                 .build();
-        getFriends(user);
+        getFriendsId(user);
         return user;
     }
 }

@@ -43,7 +43,7 @@ public class Film {
 
     public void deleteLike(Integer id) {
         if (!likes.remove(id)) {
-            throw new NotFoundException(String.format("Like with id = %d not found", id));
+            throw new NotFoundException(String.format("Like with user id = %d not found", id));
         }
         rate = likes.size();
     }

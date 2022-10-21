@@ -10,4 +10,6 @@ public interface DataStorage<T> {
     void add(T obj);
 
     void update(T obj);
+
+    void delete(int id);
 }

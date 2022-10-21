@@ -6,8 +6,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService extends AbstractService<User> {
@@ -22,27 +20,21 @@ public class UserService extends AbstractService<User> {
         User user = getById(userId);
         getById(friendId); // check friend
         user.addFriend(friendId);
-        userStorage.saveFriends(user);
+        userStorage.addFriend(userId, friendId);
     }
 
     public void deleteFriend(int userId, int friendId) {
         User user = getById(userId);
         getById(friendId);
         user.deleteFriend(friendId);
-        userStorage.saveFriends(user);
+        userStorage.deleteFriend(userId, friendId);
     }
 
     public Collection<User> getFriends(int userId) {
-        return userStorage.getById(userId).getFriends().stream()
-                .map(this::getById)
-                .collect(Collectors.toList());
+        return userStorage.getFriends(userId);
     }
 
     public Collection<User> commonFriends(int userId, int otherId) {
-        Set<Integer> otherUser = userStorage.getById(otherId).getFriends();
-        return userStorage.getById(userId).getFriends().stream()
-                .filter(otherUser::contains)
-                .map(userStorage::getById)
-                .collect(Collectors.toList());
+        return userStorage.commonFriends(userId, otherId);
     }
 }

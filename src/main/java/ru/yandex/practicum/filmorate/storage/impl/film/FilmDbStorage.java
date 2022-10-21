@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.impl.film;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -16,6 +17,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -27,19 +29,21 @@ public class FilmDbStorage implements FilmStorage {
             "rating, mpa_id) VALUES (?, ?, ?, ?, ?, ?)";
     private static final String SQL_UPDATE_FILM = "UPDATE films SET film_name = ?, description = ?, release_date = ?, " +
             "duration = ?, rating = ?, mpa_id = ? WHERE film_id = ?";
-    private static final String SQL_GET_FILM_BY_ID = "SELECT f.film_id, f.film_name, f.description, f.release_date, " +
-            "f.duration, f.rating, f.mpa_id, m.mpa_name, m.mpa_description FROM films AS f " +
+    private static final String SQL_DELETE_FILM = "DELETE FROM films WHERE film_id = ?";
+    private static final String SQL_GET_FILM_BY_ID = "SELECT f.*, m.* FROM films AS f " +
             "LEFT JOIN mpa_ratings AS m ON f.mpa_id = m.mpa_id WHERE f.film_id = ?";
-    private static final String SQL_GET_ALL_FILMS = "SELECT f.film_id, f.film_name, f.description, f.release_date, " +
-            "f.duration, f.rating, f.mpa_id, m.mpa_name, m.mpa_description FROM films AS f " +
+    private static final String SQL_GET_ALL_FILMS = "SELECT f.*, m.* FROM films AS f " +
             "LEFT JOIN mpa_ratings AS m ON f.mpa_id = m.mpa_id";
+    private static final String SQL_GET_TOP_FILMS = "SELECT f.*, m.* FROM films AS f LEFT JOIN mpa_ratings AS m " +
+            "ON f.mpa_id = m.mpa_id LEFT JOIN movies_likes AS ml ON f.film_id = ml.film_id " +
+            "GROUP BY f.film_id ORDER BY COUNT(ml.user_id) DESC LIMIT ?";
     private static final String SQL_ADD_LIKE = "INSERT INTO movies_likes (film_id, user_id) VALUES (?, ?)";
     private static final String SQL_GET_ALL_LIKES = "SELECT user_id FROM movies_likes WHERE film_id = ?";
-    private static final String SQL_DELETE_LIKES = "DELETE FROM movies_likes WHERE film_id = ?";
+    private static final String SQL_DELETE_LIKE = "DELETE FROM movies_likes WHERE film_id = ? AND user_id = ?";
     private static final String SQL_ADD_GENRE = "INSERT INTO movies_genres (film_id, genre_id) VALUES (?, ?)";
-    private static final String SQL_GET_ALL_GENRES = "SELECT genre_id FROM movies_genres WHERE film_id = ?";
+    private static final String SQL_GET_FILM_GENRES = "SELECT mg.genre_id, g.genre_name FROM movies_genres AS mg " +
+            "LEFT JOIN genres AS g ON mg.GENRE_ID = g.GENRE_ID WHERE mg.film_id = ?";
     private static final String SQL_DELETE_GENRES = "DELETE FROM movies_genres WHERE film_id = ?";
-    private static final String SQL_GET_GENRE_BY_ID = "SELECT genre_id, genre_name FROM genres WHERE genre_id = ?";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -91,27 +95,49 @@ public class FilmDbStorage implements FilmStorage {
 
         saveGenres(film);
         /*
-            без очистки жанров, невозможно пройти тест постмана из-за неверного порядка
+            без очистки жанров, невозможно пройти тест постмана Friend film genres update with duplicate
+            из-за неверно возвращаемого порядка жанров
+            c LinkedHashSet() ситуация аналогичная
          */
         film.deleteAllGenres();
         getGenres(film);
     }
 
     @Override
-    public void saveLikes(Film film) {
-        update(film); // update rate
-        jdbcTemplate.update(SQL_DELETE_LIKES, film.getId());
-        for (Integer like: film.getLikes()) {
-            jdbcTemplate.update(SQL_ADD_LIKE, film.getId(), like);
-        }
+    public void delete(int id) {
+        getById(id);
+        jdbcTemplate.update(SQL_DELETE_FILM, id);
+    }
+
+    @Override
+    public void addLike(int filmId, int userId) {
+        jdbcTemplate.update(SQL_ADD_LIKE, filmId, userId);
+    }
+
+    @Override
+    public void deleteLike(int filmId, int userId) {
+        jdbcTemplate.update(SQL_DELETE_LIKE, filmId, userId);
+    }
+
+    @Override
+    public Collection<Film> getTopFilms(int count) {
+        return jdbcTemplate.query(SQL_GET_TOP_FILMS, this::mapRowToFilm, count);
     }
 
     @Override
     public void saveGenres(Film film) {
         jdbcTemplate.update(SQL_DELETE_GENRES, film.getId());
-        for (Genre genre : film.getGenres()) {
-            jdbcTemplate.update(SQL_ADD_GENRE, film.getId(), genre.getId());
-        }
+        List<Genre> genres = new ArrayList<>(film.getGenres());
+        jdbcTemplate.batchUpdate(SQL_ADD_GENRE, new BatchPreparedStatementSetter() {
+            public void setValues(PreparedStatement ps, int i)
+                    throws SQLException {
+                ps.setInt(1, film.getId());
+                ps.setInt(2, genres.get(i).getId());
+            }
+            public int getBatchSize() {
+                return genres.size();
+            }
+        });
     }
 
     private void getLikes(Film film) {
@@ -122,13 +148,9 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void getGenres(Film film) {
-        SqlRowSet genres = jdbcTemplate.queryForRowSet(SQL_GET_ALL_GENRES, film.getId());
-        while (genres.next()) {
-            List<Genre> genreList = jdbcTemplate.query(SQL_GET_GENRE_BY_ID, this::mapRowToGenre, genres.getInt("genre_id"));
-            if (genreList.size() != 1) {
-                throw new NotFoundException(String.format("Genre with id = %d not found.", genres.getInt("genre_id")));
-            }
-            film.addGenre(genreList.get(0));
+        List<Genre> genres = jdbcTemplate.query(SQL_GET_FILM_GENRES, this::mapRowToGenre, film.getId());
+        for (Genre genre : genres) {
+            film.addGenre(genre);
         }
     }
 

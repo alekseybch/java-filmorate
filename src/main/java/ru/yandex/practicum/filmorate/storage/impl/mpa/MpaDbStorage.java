@@ -15,8 +15,8 @@ import java.util.List;
 @Repository("mpaDbStorage")
 @RequiredArgsConstructor
 public class MpaDbStorage implements DataStorage<Mpa> {
-    private static final String SQL_GET_MPA_BY_ID = "SELECT mpa_id, mpa_name, mpa_description FROM mpa_ratings WHERE mpa_id = ?";
-    private static final String SQL_GET_ALL_MPA = "SELECT mpa_id, mpa_name, mpa_description FROM mpa_ratings";
+    private static final String SQL_GET_MPA_BY_ID = "SELECT * FROM mpa_ratings WHERE mpa_id = ?";
+    private static final String SQL_GET_ALL_MPA = "SELECT * FROM mpa_ratings";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -40,6 +40,10 @@ public class MpaDbStorage implements DataStorage<Mpa> {
 
     @Override
     public void update(Mpa mpa) {
+    }
+
+    @Override
+    public void delete(int id) {
     }
 
     private Mpa mapRowToMpa(ResultSet resultSet, int rowNum) throws SQLException {
