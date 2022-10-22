@@ -15,7 +15,6 @@ import java.util.Collection;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
-
     private final UserService userService;
 
     @GetMapping
@@ -56,7 +55,7 @@ public class UserController {
     public User put(@RequestBody @Valid @NotNull User user) {
         log.info("/users PUT - request received {}", user);
         userService.update(user);
-        log.info("User id = {} is uprated {}", user.getId(), user);
+        log.info("User id = {} is updated {}", user.getId(), user);
         return user;
     }
 
@@ -67,6 +66,13 @@ public class UserController {
                 "a friend received id = {}, friendId = {}", id, friendId);
         userService.addFriend(id, friendId);
         log.info("User id = {} added friend id = {}", id, friendId);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable int id) {
+        log.info("/users/{id} DELETE - request to delete id = {}", id);
+        userService.delete(id);
+        log.info("User id = {} deleted", id);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")

@@ -3,15 +3,15 @@ package ru.yandex.practicum.filmorate.storage.impl.film;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.DataStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-@Component
-public class InMemoryFilmStorage implements DataStorage<Film> {
-
+@Component("inMemoryFilmStorage")
+public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Integer, Film> films = new HashMap<>();
     private int id = 0;
 
@@ -40,13 +40,38 @@ public class InMemoryFilmStorage implements DataStorage<Film> {
 
     @Override
     public void update(Film film) {
-        if (films.containsKey(film.getId())) {
-            for (Integer userId: films.get(film.getId()).getLikes()) {
-                film.addLike(userId);
-            }
-            films.put(film.getId(), film);
-        } else {
-            throw new NotFoundException(String.format("Film with id = %d not found.", film.getId()));
+        getById(film.getId());
+        for (Integer userId: films.get(film.getId()).getLikes()) {
+            film.addLike(userId);
         }
+        films.put(film.getId(), film);
+    }
+
+    @Override
+    public void delete(int id) {
+        films.remove(id);
+    }
+
+    @Override
+    public void addLike(int filmId, int userId) {
+        films.get(filmId).addLike(userId);
+    }
+
+    @Override
+    public void deleteLike(int filmId, int userId) {
+        films.get(filmId).deleteLike(userId);
+    }
+
+    @Override
+    public Collection<Film> getTopFilms(int count) {
+        return getAll().stream()
+                .sorted((o1, o2) -> o2.getLikes().size() - o1.getLikes().size())
+                .limit(count)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void saveGenres(Film film) {
+        films.put(film.getId(), film);
     }
 }

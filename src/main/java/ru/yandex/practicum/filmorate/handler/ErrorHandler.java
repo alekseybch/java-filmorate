@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler extends ResponseEntityExceptionHandler {
-
     private static final String TIMESTAMP = "timestamp";
     private static final String STATUS = "status";
     private static final String ERROR = "error";

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.bytebuddy.utility.RandomString;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -12,9 +14,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.DataStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -29,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@AutoConfigureTestDatabase
 public class FilmControllerTest {
     private static final LocalDate FIRST_RELEASE_DATE= LocalDate.of(1895, 12, 28);
     private static final LocalDate RELEASE_DATE= LocalDate.of(2015, 5, 12);
@@ -52,22 +57,30 @@ public class FilmControllerTest {
                             .description("testdescription")
                             .releaseDate(RELEASE_DATE)
                             .duration(100)
+                            .mpa(Mpa.builder()
+                                    .id(2)
+                                    .build())
                             .build(),
                     Film.builder()
                             .name("kavabanga test film")
                             .description("kavabanga")
                             .releaseDate(RELEASE_DATE.minusYears(2))
                             .duration(150)
+                            .mpa(Mpa.builder()
+                                    .id(4)
+                                    .build())
                             .build()));
 
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
-    private DataStorage<Film> filmStorage;
+    @Qualifier("filmDbStorage")
+    private FilmStorage filmStorage;
     @Autowired
     private FilmService filmService;
     @Autowired
-    private DataStorage<User> userStorage;
+    @Qualifier("userDbStorage")
+    private UserStorage userStorage;
     @Autowired
     private MockMvc mockMvc;
 
@@ -192,6 +205,9 @@ public class FilmControllerTest {
                 .description("kavabanga")
                 .releaseDate(RELEASE_DATE)
                 .duration(300)
+                .mpa(Mpa.builder()
+                        .id(3)
+                        .build())
                 .build();
 
         filmStorage.add(getFilm(0));
@@ -220,6 +236,9 @@ public class FilmControllerTest {
                 .description("kavabanga")
                 .releaseDate(RELEASE_DATE)
                 .duration(300)
+                .mpa(Mpa.builder()
+                        .id(4)
+                        .build())
                 .build();
 
         filmStorage.add(getFilm(0));
@@ -314,7 +333,7 @@ public class FilmControllerTest {
         userStorage.add(getUser(0));
         filmService.addLike(1, 1);
 
-        final Set<Integer> likes = filmStorage.getById(1).getLikes();
+        Set<Integer> likes = filmStorage.getById(1).getLikes();
         assertNotNull(likes, "Likes are not returned.");
         assertEquals(1, likes.size(), "Incorrect number of likes.");
 
@@ -325,6 +344,7 @@ public class FilmControllerTest {
                 //then
                 .andExpect(status().isOk());
 
+        likes = filmStorage.getById(1).getLikes();
         assertNotNull(likes, "Likes are not returned.");
         assertEquals(0, likes.size(), "Incorrect number of likes.");
     }
