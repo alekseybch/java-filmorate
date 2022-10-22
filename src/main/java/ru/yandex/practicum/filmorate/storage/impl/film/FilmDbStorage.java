@@ -94,13 +94,6 @@ public class FilmDbStorage implements FilmStorage {
                 film.getId());
 
         saveGenres(film);
-        /*
-            без очистки жанров, невозможно пройти тест постмана Friend film genres update with duplicate
-            из-за неверно возвращаемого порядка жанров
-            c LinkedHashSet() ситуация аналогичная
-         */
-        film.deleteAllGenres();
-        getGenres(film);
     }
 
     @Override
