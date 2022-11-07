@@ -11,5 +11,5 @@ public interface FilmStorage extends DataStorage<Film> {
 
     Collection<Film> getTopFilms(int count);
 
-    void saveGenres(Film film);
+    Collection<Film> getSortedDirectorFilms(int directorId, String sortBy);
 }

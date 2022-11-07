@@ -8,9 +8,11 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.DataStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.Date;
@@ -37,15 +39,31 @@ public class FilmDbStorage implements FilmStorage {
     private static final String SQL_GET_TOP_FILMS = "SELECT f.*, m.* FROM films AS f LEFT JOIN mpa_ratings AS m " +
             "ON f.mpa_id = m.mpa_id LEFT JOIN movies_likes AS ml ON f.film_id = ml.film_id " +
             "GROUP BY f.film_id ORDER BY COUNT(ml.user_id) DESC LIMIT ?";
+    private static final String SQL_GET_SORTED_FILMS_BY_YEAR = "SELECT f.*, m.* FROM films AS f " +
+            "LEFT JOIN mpa_ratings AS m ON f.mpa_id = m.mpa_id " +
+            "LEFT JOIN movies_directors AS md ON f.film_id = md.film_id " +
+            "LEFT JOIN directors AS d ON md.director_id = d.director_id WHERE d.director_id = ? " +
+            "ORDER BY EXTRACT(YEAR FROM CAST(release_date AS date))";
+    private static final String SQL_GET_SORTED_FILMS_BY_LIKES = "SELECT f.*, m.* FROM films AS f " +
+            "LEFT JOIN mpa_ratings AS m ON f.mpa_id = m.mpa_id " +
+            "LEFT JOIN movies_directors AS md ON f.film_id = md.film_id " +
+            "LEFT JOIN directors AS d ON md.director_id = d.director_id " +
+            "LEFT JOIN movies_likes AS ml ON f.film_id = ml.film_id " +
+            "WHERE d.director_id = ? GROUP BY f.film_id ORDER BY COUNT(ml.user_id) DESC";
     private static final String SQL_ADD_LIKE = "INSERT INTO movies_likes (film_id, user_id) VALUES (?, ?)";
     private static final String SQL_GET_ALL_LIKES = "SELECT user_id FROM movies_likes WHERE film_id = ?";
     private static final String SQL_DELETE_LIKE = "DELETE FROM movies_likes WHERE film_id = ? AND user_id = ?";
     private static final String SQL_ADD_GENRE = "INSERT INTO movies_genres (film_id, genre_id) VALUES (?, ?)";
+    private static final String SQL_ADD_DIRECTOR = "INSERT INTO movies_directors (film_id, director_id) VALUES (?, ?)";
     private static final String SQL_GET_FILM_GENRES = "SELECT mg.genre_id, g.genre_name FROM movies_genres AS mg " +
-            "LEFT JOIN genres AS g ON mg.GENRE_ID = g.GENRE_ID WHERE mg.film_id = ?";
+            "LEFT JOIN genres AS g ON mg.genre_id = g.genre_id WHERE mg.film_id = ?";
+    private static final String SQL_GET_FILM_DIRECTORS = "SELECT md.director_id, d.director_name FROM movies_directors AS md " +
+            "LEFT JOIN directors AS d ON md.director_id = d.director_id WHERE md.film_id = ?";
     private static final String SQL_DELETE_GENRES = "DELETE FROM movies_genres WHERE film_id = ?";
+    private static final String SQL_DELETE_DIRECTORS = "DELETE FROM movies_directors WHERE film_id = ?";
 
     private final JdbcTemplate jdbcTemplate;
+    private final DataStorage<Director> directorStorage;
 
     @Override
     public Collection<Film> getAll() {
@@ -78,6 +96,7 @@ public class FilmDbStorage implements FilmStorage {
 
         film.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
         saveGenres(film);
+        saveDirectors(film);
     }
 
     @Override
@@ -94,6 +113,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getId());
 
         saveGenres(film);
+        saveDirectors(film);
     }
 
     @Override
@@ -118,7 +138,20 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public void saveGenres(Film film) {
+    public Collection<Film> getSortedDirectorFilms(int directorId, String sortBy) {
+        directorStorage.getById(directorId);
+        Collection<Film> films = null;
+        switch (sortBy) {
+            case "year":
+                films = jdbcTemplate.query(SQL_GET_SORTED_FILMS_BY_YEAR, this::mapRowToFilm, directorId);
+                break;
+            case "likes":
+                films = jdbcTemplate.query(SQL_GET_SORTED_FILMS_BY_LIKES, this::mapRowToFilm, directorId);
+        }
+        return films;
+    }
+
+    private void saveGenres(Film film) {
         jdbcTemplate.update(SQL_DELETE_GENRES, film.getId());
         List<Genre> genres = new ArrayList<>(film.getGenres());
         jdbcTemplate.batchUpdate(SQL_ADD_GENRE, new BatchPreparedStatementSetter() {
@@ -129,6 +162,21 @@ public class FilmDbStorage implements FilmStorage {
             }
             public int getBatchSize() {
                 return genres.size();
+            }
+        });
+    }
+
+    private void saveDirectors(Film film) {
+        jdbcTemplate.update(SQL_DELETE_DIRECTORS, film.getId());
+        List<Director> directors = new ArrayList<>(film.getDirectors());
+        jdbcTemplate.batchUpdate(SQL_ADD_DIRECTOR, new BatchPreparedStatementSetter() {
+            public void setValues(PreparedStatement ps, int i)
+                    throws SQLException {
+                ps.setInt(1, film.getId());
+                ps.setInt(2, directors.get(i).getId());
+            }
+            public int getBatchSize() {
+                return directors.size();
             }
         });
     }
@@ -144,6 +192,13 @@ public class FilmDbStorage implements FilmStorage {
         List<Genre> genres = jdbcTemplate.query(SQL_GET_FILM_GENRES, this::mapRowToGenre, film.getId());
         for (Genre genre : genres) {
             film.addGenre(genre);
+        }
+    }
+
+    private void getDirectors(Film film) {
+        List<Director> directors = jdbcTemplate.query(SQL_GET_FILM_DIRECTORS, this::mapRowToDirector, film.getId());
+        for (Director director : directors) {
+            film.addDirector(director);
         }
     }
 
@@ -163,6 +218,7 @@ public class FilmDbStorage implements FilmStorage {
                 .build();
         getLikes(film);
         getGenres(film);
+        getDirectors(film);
         return film;
     }
 
@@ -170,6 +226,13 @@ public class FilmDbStorage implements FilmStorage {
         return Genre.builder()
                 .id(resultSet.getInt("genre_id"))
                 .name(resultSet.getString("genre_name"))
+                .build();
+    }
+
+    private Director mapRowToDirector(ResultSet resultSet, int rowNum) throws SQLException {
+        return Director.builder()
+                .id(resultSet.getInt("director_id"))
+                .name(resultSet.getString("director_name"))
                 .build();
     }
 }

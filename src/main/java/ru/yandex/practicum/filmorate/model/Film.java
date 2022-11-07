@@ -32,6 +32,7 @@ public class Film {
     private int rate;
     private Mpa mpa;
     private final LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+    private final Set<Director> directors = new HashSet<>();
     @JsonIgnore
     private final Set<Integer> likes = new HashSet<>();
 
@@ -49,5 +50,9 @@ public class Film {
 
     public void addGenre(Genre genre) {
         genres.add(genre);
+    }
+
+    public void addDirector(Director director) {
+        directors.add(director);
     }
 }
