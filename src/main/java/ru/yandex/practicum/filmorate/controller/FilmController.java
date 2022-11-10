@@ -35,8 +35,14 @@ public class FilmController {
         return filmService.getTopFilms(count);
     }
 
+    @GetMapping("director/{directorId}")
+    public Collection<Film> getDirectorFilms(@PathVariable Integer directorId,
+                                             @RequestParam String sortBy) {
+        return filmService.getSortedDirectorFilms(directorId, sortBy);
+    }
+
     @PostMapping
-    public Film create(@RequestBody @Valid @NotNull Film film) {
+    public Film createFilm(@RequestBody @Valid @NotNull Film film) {
         log.info("/films POST request received {}", film);
         filmService.add(film);
         log.info("Film is created - {}", film);
@@ -44,7 +50,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film put(@RequestBody @Valid @NotNull Film film) {
+    public Film putFilm(@RequestBody @Valid @NotNull Film film) {
         log.info("/films PUT request received {}", film);
         filmService.update(film);
         log.info("Film is updated {}", film);

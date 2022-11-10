@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.SortRequestException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -39,5 +40,16 @@ public class FilmService extends AbstractService<Film>{
     public Collection<Film> getTopFilms(int count) {
         if (count <= 0) throw new IllegalArgumentException(String.format("Must be positive count = %d", count));
         return filmStorage.getTopFilms(count);
+    }
+
+    public Collection<Film> getSortedDirectorFilms(int directorId, String sortBy) {
+        switch (sortBy) {
+            case "year":
+                return filmStorage.getSortedDirectorFilmsByYear(directorId, sortBy);
+            case "likes":
+                return filmStorage.getSortedDirectorFilmsByLikes(directorId, sortBy);
+            default:
+                throw new SortRequestException(String.format("Sort must be 'year' or 'likes' sortBy = %s", sortBy));
+        }
     }
 }
