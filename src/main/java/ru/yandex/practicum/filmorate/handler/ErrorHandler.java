@@ -14,6 +14,7 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.SortRequestException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.OffsetDateTime;
@@ -36,6 +37,15 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
     protected Map<String, Object> handleNotFound(NotFoundException ex, WebRequest request) {
         log.error("Not found error: {}", ex.getMessage(), ex);
         Map<String, Object> responseBody = getGeneralErrorBody(HttpStatus.NOT_FOUND, request);
+        responseBody.put(REASONS, ex.getMessage());
+        return responseBody;
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(SortRequestException.class)
+    protected Map<String, Object> handleNotFound(SortRequestException ex, WebRequest request) {
+        log.error("Sort request error: {}", ex.getMessage(), ex);
+        Map<String, Object> responseBody = getGeneralErrorBody(HttpStatus.BAD_REQUEST, request);
         responseBody.put(REASONS, ex.getMessage());
         return responseBody;
     }

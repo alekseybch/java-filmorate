@@ -11,5 +11,7 @@ public interface FilmStorage extends DataStorage<Film> {
 
     Collection<Film> getTopFilms(int count);
 
-    Collection<Film> getSortedDirectorFilms(int directorId, String sortBy);
+    Collection<Film> getSortedDirectorFilmsByYear(int directorId, String sortBy);
+
+    Collection<Film> getSortedDirectorFilmsByLikes(int directorId, String sortBy);
 }
