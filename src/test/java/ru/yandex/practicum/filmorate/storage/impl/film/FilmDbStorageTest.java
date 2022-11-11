@@ -39,10 +39,10 @@ public class FilmDbStorageTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     public void givenNewFilm_whenFindFilmById_thenGetFilmById1() {
         //given
-        filmStorage.add(film);
+        filmStorage.create(film);
 
         //when
-        final Film testFilm = filmStorage.getById(1);
+        final Film testFilm = filmStorage.readById(1);
 
         //then
         assertThat(testFilm)
@@ -68,11 +68,11 @@ public class FilmDbStorageTest {
                         .build())
                 .build();
 
-        filmStorage.add(film);
+        filmStorage.create(film);
 
         //when
         filmStorage.update(updatedFilm);
-        final Film testFilm = filmStorage.getById(1);
+        final Film testFilm = filmStorage.readById(1);
 
         //then
         assertThat(testFilm)
@@ -97,11 +97,11 @@ public class FilmDbStorageTest {
                         .build())
                 .build();
 
-        filmStorage.add(film);
-        filmStorage.add(testFilm);
+        filmStorage.create(film);
+        filmStorage.create(testFilm);
 
         //when
-        final Collection<Film> films = filmStorage.getAll();
+        final Collection<Film> films = filmStorage.readAll();
 
         //then
         assertNotNull(films, "Films are not returned.");

@@ -19,14 +19,14 @@ public class MpaController {
     private final MpaService mpaService;
 
     @GetMapping
-    public Collection<Mpa> findAll() {
-        log.info("/mpa GET request received");
+    public Collection<Mpa> findAllMpa() {
+        log.info("/mpa GET request received.");
         return mpaService.getAll();
     }
 
     @GetMapping("/{id}")
-    public Mpa findMpa(@PathVariable int id) {
-        log.info("/mpa/{id} GET - request to receive a mpa has been received id = {}", id);
+    public Mpa findMpaById(@PathVariable Integer id) {
+        log.info("/mpa/{id} GET - request to receive a mpa has been received id = {}.", id);
         return mpaService.getById(id);
     }
 }

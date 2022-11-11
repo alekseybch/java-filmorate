@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.validator.DateFilmValidate;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
@@ -18,9 +17,8 @@ import java.util.Set;
 @Data
 @Builder
 public class Film {
-    int id;
-    @NotNull(message = "Can't be null.")
-    @NotBlank(message = "Can't be blank.")
+    private Integer id;
+    @NotBlank(message = "Can't be null or blank.")
     @Size(max = 150, message = "Must not be more than 150 characters.")
     private String name;
     @Size(max = 200, message = "Must not be more than 200 characters.")
@@ -28,8 +26,8 @@ public class Film {
     @DateFilmValidate
     private LocalDate releaseDate;
     @Positive(message = "Must be a positive number.")
-    private int duration;
-    private int rate;
+    private Integer duration;
+    private Integer rate;
     private Mpa mpa;
     private final LinkedHashSet<Genre> genres = new LinkedHashSet<>();
     private final Set<Director> directors = new HashSet<>();

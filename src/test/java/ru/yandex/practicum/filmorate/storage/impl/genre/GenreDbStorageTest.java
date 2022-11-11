@@ -24,7 +24,7 @@ public class GenreDbStorageTest {
     @Test
     public void whenFindGenreById_thenGetGenreById1() {
         //when
-        final Genre genre = genreStorage.getById(1);
+        final Genre genre = genreStorage.readById(1);
 
         //then
         assertThat(genre)
@@ -35,7 +35,7 @@ public class GenreDbStorageTest {
     @Test
     public void whenFindAllGenres_thenGetAllGenres() {
         //when
-        final Collection<Genre> genres = genreStorage.getAll();
+        final Collection<Genre> genres = genreStorage.readAll();
 
         //then
         assertNotNull(genres, "Genres are not returned.");

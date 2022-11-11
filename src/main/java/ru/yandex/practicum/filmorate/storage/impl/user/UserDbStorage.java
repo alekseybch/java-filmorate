@@ -21,32 +21,32 @@ import java.util.Objects;
 @Repository("userDbStorage")
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
-    private static final String SQL_ADD_USER = "INSERT INTO users (email, login, user_name, birthday) " +
+    private static final String SQL_CREATE_USER = "INSERT INTO users (email, login, user_name, birthday) " +
             "VALUES (?, ?, ?, ?)";
+    private static final String SQL_CREATE_FRIEND = "INSERT INTO friendships (user_id, friend_id) VALUES (?, ?)";
     private static final String SQL_UPDATE_USER = "UPDATE users SET email = ?, login = ?, user_name = ?, birthday = ? " +
             "WHERE user_id = ?";
     private static final String SQL_DELETE_USER = "DELETE FROM users WHERE user_id = ?";
-    private static final String SQL_GET_USER_BY_ID = "SELECT * FROM users WHERE user_id = ?";
-    private static final String SQL_GET_ALL_USERS = "SELECT * FROM users";
-    private static final String SQL_GET_ALL_FRIENDS = "SELECT u.* FROM friendships AS f LEFT JOIN users AS u " +
-            "ON f.friend_id = u.user_id WHERE f.user_id = ?";
-    private static final String SQL_GET_ALL_FRIENDS_ID = "SELECT friend_id FROM friendships WHERE user_id = ?";
-    private static final String SQL_ADD_FRIEND = "INSERT INTO friendships (user_id, friend_id) VALUES (?, ?)";
     private static final String SQL_DELETE_FRIEND = "DELETE FROM friendships WHERE user_id = ? AND friend_id = ?";
-    private static final String SQL_GET_COMMON_FRIENDS = "SELECT u.* FROM friendships AS f LEFT JOIN users AS u " +
+    private static final String SQL_READ_USER_BY_ID = "SELECT * FROM users WHERE user_id = ?";
+    private static final String SQL_READ_ALL_USERS = "SELECT * FROM users";
+    private static final String SQL_READ_ALL_FRIENDS = "SELECT u.* FROM friendships AS f LEFT JOIN users AS u " +
+            "ON f.friend_id = u.user_id WHERE f.user_id = ?";
+    private static final String SQL_READ_ALL_FRIENDS_ID = "SELECT friend_id FROM friendships WHERE user_id = ?";
+    private static final String SQL_READ_MUTUAL_FRIENDS = "SELECT u.* FROM friendships AS f LEFT JOIN users AS u " +
             "ON f.friend_id = u.user_id WHERE f.user_id = ? INTERSECT SELECT u.* FROM friendships AS f " +
             "LEFT JOIN users AS u ON f.friend_id = u.user_id WHERE f.user_id = ?";
 
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public Collection<User> getAll() {
-        return jdbcTemplate.query(SQL_GET_ALL_USERS, this::mapRowToUser);
+    public Collection<User> readAll() {
+        return jdbcTemplate.query(SQL_READ_ALL_USERS, this::mapRowToUser);
     }
 
     @Override
-    public User getById(int id) {
-        List<User> users = jdbcTemplate.query(SQL_GET_USER_BY_ID, this::mapRowToUser, id);
+    public User readById(Integer id) {
+        List<User> users = jdbcTemplate.query(SQL_READ_USER_BY_ID, this::mapRowToUser, id);
         if (users.size() != 1) {
             throw new NotFoundException(String.format("User with id = %d not found.", id));
         }
@@ -54,12 +54,12 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public void add(User user) {
+    public void create(User user) {
         user.checkName();
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(SQL_ADD_USER, new String[]{"user_id"});
+            PreparedStatement stmt = connection.prepareStatement(SQL_CREATE_USER, new String[]{"user_id"});
             stmt.setString(1, user.getEmail());
             stmt.setString(2, user.getLogin());
             stmt.setString(3, user.getName());
@@ -72,7 +72,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void update(User user) {
-        getById(user.getId());
+        readById(user.getId());
         user.checkName();
 
         jdbcTemplate.update(SQL_UPDATE_USER,
@@ -84,36 +84,36 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public void delete(int id) {
-        getById(id);
+    public void delete(Integer id) {
+        readById(id);
         jdbcTemplate.update(SQL_DELETE_USER, id);
     }
 
     @Override
-    public void addFriend(int userId, int friendId) {
-        jdbcTemplate.update(SQL_ADD_FRIEND, userId, friendId);
+    public void createFriend(Integer userId, Integer friendId) {
+        jdbcTemplate.update(SQL_CREATE_FRIEND, userId, friendId);
     }
 
     @Override
-    public void deleteFriend(int userId, int friendId) {
+    public void deleteFriend(Integer userId, Integer friendId) {
         jdbcTemplate.update(SQL_DELETE_FRIEND, userId, friendId);
     }
 
     @Override
-    public Collection<User> getFriends(int id) {
-        getById(id);
-        return jdbcTemplate.query(SQL_GET_ALL_FRIENDS, this::mapRowToUser, id);
+    public Collection<User> readFriends(Integer id) {
+        readById(id);
+        return jdbcTemplate.query(SQL_READ_ALL_FRIENDS, this::mapRowToUser, id);
     }
 
     @Override
-    public Collection<User> commonFriends(int userId, int otherId) {
-        getById(userId);
-        getById(otherId);
-        return jdbcTemplate.query(SQL_GET_COMMON_FRIENDS, this::mapRowToUser, userId, otherId);
+    public Collection<User> mutualFriends(Integer userId, Integer otherId) {
+        readById(userId);
+        readById(otherId);
+        return jdbcTemplate.query(SQL_READ_MUTUAL_FRIENDS, this::mapRowToUser, userId, otherId);
     }
 
-    private void getFriendsId(User user) {
-        SqlRowSet friends = jdbcTemplate.queryForRowSet(SQL_GET_ALL_FRIENDS_ID, user.getId());
+    private void readFriendsId(User user) {
+        SqlRowSet friends = jdbcTemplate.queryForRowSet(SQL_READ_ALL_FRIENDS_ID, user.getId());
         while (friends.next()) {
             user.addFriend(friends.getInt("friend_id"));
         }
@@ -127,7 +127,7 @@ public class UserDbStorage implements UserStorage {
                 .name(resultSet.getString("user_name"))
                 .birthday(resultSet.getDate("birthday").toLocalDate())
                 .build();
-        getFriendsId(user);
+        readFriendsId(user);
         return user;
     }
 }

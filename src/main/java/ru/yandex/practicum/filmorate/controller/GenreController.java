@@ -16,14 +16,14 @@ public class GenreController {
     private final GenreService genreService;
 
     @GetMapping
-    public Collection<Genre> findAll() {
-        log.info("/genres GET request received");
+    public Collection<Genre> findAllGenres() {
+        log.info("/genres GET request received.");
         return genreService.getAll();
     }
 
     @GetMapping("/{id}")
-    public Genre findGenre(@PathVariable int id) {
-        log.info("/genres/{id} GET - request to receive a genre has been received id = {}", id);
+    public Genre findGenreById(@PathVariable Integer id) {
+        log.info("/genres/{id} GET - request to receive a genre has been received id = {}.", id);
         return genreService.getById(id);
     }
 }

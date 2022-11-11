@@ -12,20 +12,20 @@ public abstract class AbstractService<T> {
     }
 
     public void add(T obj) {
-        storage.add(obj);
+        storage.create(obj);
     }
 
-    public void delete(int id) {storage.delete(id);}
+    public void delete(Integer id) {storage.delete(id);}
 
     public void update(T obj) {
         storage.update(obj);
     }
 
-    public T getById(int id) {
-        return storage.getById(id);
+    public T getById(Integer id) {
+        return storage.readById(id);
     }
 
     public Collection<T> getAll() {
-        return storage.getAll();
+        return storage.readAll();
     }
 }

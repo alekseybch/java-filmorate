@@ -3,13 +3,13 @@ package ru.yandex.practicum.filmorate.storage;
 import java.util.Collection;
 
 public interface DataStorage<T> {
-    Collection<T> getAll();
+    Collection<T> readAll();
 
-    T getById(int id);
+    T readById(Integer id);
 
-    void add(T obj);
+    void create(T obj);
 
     void update(T obj);
 
-    void delete(int id);
+    void delete(Integer id);
 }

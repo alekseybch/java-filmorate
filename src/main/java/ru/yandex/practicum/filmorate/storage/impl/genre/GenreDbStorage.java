@@ -15,19 +15,19 @@ import java.util.List;
 @Repository("genreDbStorage")
 @RequiredArgsConstructor
 public class GenreDbStorage implements DataStorage<Genre> {
-    private static final String SQL_GET_GENRE_BY_ID = "SELECT * FROM genres WHERE genre_id = ?";
-    private static final String SQL_GET_ALL_GENRES = "SELECT * FROM genres";
+    private static final String SQL_READ_GENRE_BY_ID = "select * from GENRES where GENRE_ID = ?";
+    private static final String SQL_READ_ALL_GENRES = "select * from GENRES";
 
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public Collection<Genre> getAll() {
-        return jdbcTemplate.query(SQL_GET_ALL_GENRES, this::mapRowToGenre);
+    public Collection<Genre> readAll() {
+        return jdbcTemplate.query(SQL_READ_ALL_GENRES, this::mapRowToGenre);
     }
 
     @Override
-    public Genre getById(int id) {
-        List<Genre> genres = jdbcTemplate.query(SQL_GET_GENRE_BY_ID, this::mapRowToGenre, id);
+    public Genre readById(Integer id) {
+        List<Genre> genres = jdbcTemplate.query(SQL_READ_GENRE_BY_ID, this::mapRowToGenre, id);
         if (genres.size() != 1) {
             throw new NotFoundException(String.format("Genre with id = %d not found.", id));
         }
@@ -35,7 +35,7 @@ public class GenreDbStorage implements DataStorage<Genre> {
     }
 
     @Override
-    public void add(Genre genre) {
+    public void create(Genre genre) {
     }
 
     @Override
@@ -43,7 +43,7 @@ public class GenreDbStorage implements DataStorage<Genre> {
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(Integer id) {
     }
 
     private Genre mapRowToGenre(ResultSet resultSet, int rowNum) throws SQLException {
