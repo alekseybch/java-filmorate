@@ -27,7 +27,7 @@ public class Film {
     private LocalDate releaseDate;
     @Positive(message = "Must be a positive number.")
     private Integer duration;
-    private Integer rate;
+    private int rate;
     private Mpa mpa;
     private final LinkedHashSet<Genre> genres = new LinkedHashSet<>();
     private final Set<Director> directors = new HashSet<>();
