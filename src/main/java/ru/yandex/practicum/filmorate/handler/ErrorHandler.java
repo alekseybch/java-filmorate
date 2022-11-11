@@ -15,6 +15,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.SortRequestException;
+import ru.yandex.practicum.filmorate.exception.YearValidException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.OffsetDateTime;
@@ -34,7 +35,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NotFoundException.class)
-    protected Map<String, Object> handleNotFound(NotFoundException ex, WebRequest request) {
+    protected Map<String, Object> handleNotFound (NotFoundException ex, WebRequest request) {
         log.error("Not found error: {}", ex.getMessage(), ex);
         Map<String, Object> responseBody = getGeneralErrorBody(HttpStatus.NOT_FOUND, request);
         responseBody.put(REASONS, ex.getMessage());
@@ -43,8 +44,17 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(SortRequestException.class)
-    protected Map<String, Object> handleNotFound(SortRequestException ex, WebRequest request) {
+    protected Map<String, Object> sortBadRequest (SortRequestException ex, WebRequest request) {
         log.error("Sort request error: {}", ex.getMessage(), ex);
+        Map<String, Object> responseBody = getGeneralErrorBody(HttpStatus.BAD_REQUEST, request);
+        responseBody.put(REASONS, ex.getMessage());
+        return responseBody;
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(YearValidException.class)
+    protected Map<String, Object> yearBadRequest (YearValidException ex, WebRequest request) {
+        log.error("Year request error: {}", ex.getMessage(), ex);
         Map<String, Object> responseBody = getGeneralErrorBody(HttpStatus.BAD_REQUEST, request);
         responseBody.put(REASONS, ex.getMessage());
         return responseBody;
@@ -54,7 +64,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     protected Map<String, Object> handleAllException(final Exception ex, WebRequest request) {
         log.error("Error: {}", ex.getMessage(), ex);
-        Map<String, Object> responseBody = getGeneralErrorBody(HttpStatus.NOT_FOUND, request);
+        Map<String, Object> responseBody = getGeneralErrorBody(HttpStatus.INTERNAL_SERVER_ERROR, request);
         responseBody.put(REASONS, ex.getMessage());
         return responseBody;
     }

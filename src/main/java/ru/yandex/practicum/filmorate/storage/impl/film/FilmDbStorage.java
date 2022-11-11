@@ -51,7 +51,7 @@ public class FilmDbStorage implements FilmStorage {
             "left join MOVIES_DIRECTORS md on f.FILM_ID = md.FILM_ID " +
             "left join DIRECTORS d on md.DIRECTOR_ID = d.DIRECTOR_ID where d.DIRECTOR_ID = ? " +
             "order by EXTRACT(year from CAST(RELEASE_DATE as date))";
-    private static final String SQL_READ_FILMS_SORTED_BY_LIKES = "SELECT f.*, m.* FROM films AS f " +
+    private static final String SQL_READ_FILMS_SORTED_BY_LIKES = "select f.*, m.* from films f " +
             "left join MPA_RATINGS m on f.MPA_ID = m.MPA_ID " +
             "left join MOVIES_DIRECTORS md on f.FILM_ID = md.FILM_ID " +
             "left join DIRECTORS d on md.DIRECTOR_ID = d.DIRECTOR_ID " +
@@ -65,9 +65,31 @@ public class FilmDbStorage implements FilmStorage {
     private static final String SQL_READ_FILM_DIRECTORS = "select md.DIRECTOR_ID, d.DIRECTOR_NAME " +
             "from MOVIES_DIRECTORS md " +
             "left join DIRECTORS d on md.DIRECTOR_ID = d.DIRECTOR_ID where md.FILM_ID = ?";
+    private static final String SQL_READ_TOP_FILMS_BY_GENRE_AND_YEAR = "select f.*, m.* from FILMS f " +
+            "left join MPA_RATINGS m on f.MPA_ID = m.MPA_ID " +
+            "left join MOVIES_GENRES mg on f.FILM_ID = mg.FILM_ID " +
+            "left join GENRES g on mg.GENRE_ID = g.GENRE_ID " +
+            "left join MOVIES_LIKES ml on f.FILM_ID = ml.FILM_ID " +
+            "where g.GENRE_ID = ? and EXTRACT(year from CAST(f.RELEASE_DATE as date)) = ? " +
+            "group by f.FILM_ID " +
+            "order by COUNT(ml.USER_ID) desc limit ?";
+    private static final String SQL_READ_TOP_FILMS_BY_GENRE = "select f.*, m.* from FILMS f " +
+            "left join MPA_RATINGS m on f.MPA_ID = m.MPA_ID " +
+            "left join MOVIES_GENRES mg ON f.FILM_ID = mg.FILM_ID " +
+            "left join GENRES g on mg.GENRE_ID = g.GENRE_ID " +
+            "left join MOVIES_LIKES ml on f.FILM_ID = ml.FILM_ID " +
+            "where g.GENRE_ID = ? " +
+            "group by f.FILM_ID " +
+            "order by COUNT(ml.USER_ID) desc limit ?";
+    private static final String SQL_READ_TOP_FILMS_BY_YEAR = "select f.*, m.* from FILMS f " +
+            "left join MPA_RATINGS m on f.MPA_ID = m.MPA_ID " +
+            "left join MOVIES_LIKES ml on f.film_id = ml.film_id " +
+            "where EXTRACT(year from CAST(f.RELEASE_DATE as date)) = ? " +
+            "group by f.FILM_ID order by COUNT(ml.USER_ID) desc limit ?";
 
     private final JdbcTemplate jdbcTemplate;
     private final DataStorage<Director> directorStorage;
+    private final DataStorage<Genre> genreStorage;
 
     @Override
     public Collection<Film> readAll() {
@@ -139,6 +161,23 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> readTopFilms(Integer count) {
         return jdbcTemplate.query(SQL_READ_TOP_FILMS, this::mapRowToFilm, count);
+    }
+
+    @Override
+    public Collection<Film> readTopFilmsByGenreAndYear(Integer count, Integer genreId, Integer year) {
+        genreStorage.readById(genreId);
+        return jdbcTemplate.query(SQL_READ_TOP_FILMS_BY_GENRE_AND_YEAR, this::mapRowToFilm, genreId, year, count);
+    }
+
+    @Override
+    public Collection<Film> readTopFilmsByGenre(Integer count, Integer genreId) {
+        genreStorage.readById(genreId);
+        return jdbcTemplate.query(SQL_READ_TOP_FILMS_BY_GENRE, this::mapRowToFilm, genreId, count);
+    }
+
+    @Override
+    public Collection<Film> readTopFilmsByYear(Integer count, Integer year) {
+        return jdbcTemplate.query(SQL_READ_TOP_FILMS_BY_YEAR, this::mapRowToFilm, year, count);
     }
 
     @Override

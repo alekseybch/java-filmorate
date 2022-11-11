@@ -29,9 +29,12 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<Film> getTopFilms(@RequestParam(defaultValue = "10", required = false) Integer count) {
-        log.info("/films/{id} GET - request to receive a top {} films has been received.", count);
-        return filmService.getTopFilms(count);
+    public Collection<Film> getTopFilms(@RequestParam(defaultValue = "10", required = false) Integer count,
+                                        @RequestParam(required = false) Integer genreId,
+                                        @RequestParam(required = false) Integer year) {
+        log.info("/films/{id} GET - request to receive a top {} films witch sort genreId = {}, year = {}" +
+                " has been received.", count, genreId, year);
+        return filmService.getTopFilms(count, genreId, year);
     }
 
     @GetMapping("director/{directorId}")
