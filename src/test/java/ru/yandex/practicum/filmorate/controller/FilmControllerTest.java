@@ -377,7 +377,7 @@ public class FilmControllerTest {
         filmService.addLike(2, 1);
         filmService.addLike(2, 2);
 
-        final Collection<Film> likes = filmService.getTopFilms(2);
+        final Collection<Film> likes = filmService.getTopFilms(2, null, null);
         assertNotNull(likes, "Films are not returned.");
         assertEquals(2, likes.size(), "Incorrect number of films.");
 

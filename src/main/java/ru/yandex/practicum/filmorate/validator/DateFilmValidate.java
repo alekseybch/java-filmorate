@@ -7,7 +7,7 @@ import javax.validation.Payload;
 import java.lang.annotation.*;
 
 @Constraint(validatedBy = DateFilmValidator.class)
-@Target( { ElementType.METHOD, ElementType.FIELD })
+@Target({ElementType.METHOD, ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DateFilmValidate {
     String message() default "Invalid date. First release date 1895-12-28.";
