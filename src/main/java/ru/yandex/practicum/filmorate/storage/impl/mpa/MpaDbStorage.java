@@ -15,19 +15,19 @@ import java.util.List;
 @Repository("mpaDbStorage")
 @RequiredArgsConstructor
 public class MpaDbStorage implements DataStorage<Mpa> {
-    private static final String SQL_GET_MPA_BY_ID = "SELECT * FROM mpa_ratings WHERE mpa_id = ?";
-    private static final String SQL_GET_ALL_MPA = "SELECT * FROM mpa_ratings";
+    private static final String SQL_READ_MPA_BY_ID = "select * from MPA_RATINGS where MPA_ID = ?";
+    private static final String SQL_READ_ALL_MPA = "select * from MPA_RATINGS";
 
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public Collection<Mpa> getAll() {
-        return jdbcTemplate.query(SQL_GET_ALL_MPA, this::mapRowToMpa);
+    public Collection<Mpa> readAll() {
+        return jdbcTemplate.query(SQL_READ_ALL_MPA, this::mapRowToMpa);
     }
 
     @Override
-    public Mpa getById(int id) {
-        List<Mpa> mpaList = jdbcTemplate.query(SQL_GET_MPA_BY_ID, this::mapRowToMpa, id);
+    public Mpa readById(Integer id) {
+        List<Mpa> mpaList = jdbcTemplate.query(SQL_READ_MPA_BY_ID, this::mapRowToMpa, id);
         if (mpaList.size() != 1) {
             throw new NotFoundException(String.format("Mpa with id = %d not found.", id));
         }
@@ -35,7 +35,7 @@ public class MpaDbStorage implements DataStorage<Mpa> {
     }
 
     @Override
-    public void add(Mpa mpa) {
+    public void create(Mpa mpa) {
     }
 
     @Override
@@ -43,7 +43,7 @@ public class MpaDbStorage implements DataStorage<Mpa> {
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(Integer id) {
     }
 
     private Mpa mapRowToMpa(ResultSet resultSet, int rowNum) throws SQLException {

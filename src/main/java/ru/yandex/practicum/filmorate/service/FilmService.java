@@ -21,33 +21,35 @@ public class FilmService extends AbstractService<Film>{
         this.userStorage = userStorage;
     }
 
-    public void addLike(int filmId, int userId) {
-        userStorage.getById(userId); // check user
+    public void addLike(Integer filmId, Integer userId) {
+        userStorage.readById(userId);
         Film film = getById(filmId);
         film.addLike(userId);
-        filmStorage.addLike(filmId, userId);
+        filmStorage.createLike(filmId, userId);
         update(film);
     }
 
-    public void deleteLike(int filmId, int userId) {
-        userStorage.getById(userId); // check user
+    public void deleteLike(Integer filmId, Integer userId) {
+        userStorage.readById(userId);
         Film film = getById(filmId);
         film.deleteLike(userId);
         filmStorage.deleteLike(filmId, userId);
         update(film);
     }
 
-    public Collection<Film> getTopFilms(int count) {
-        if (count <= 0) throw new IllegalArgumentException(String.format("Must be positive count = %d", count));
-        return filmStorage.getTopFilms(count);
+    public Collection<Film> getTopFilms(Integer count) {
+        if (count <= 0) {
+            throw new IllegalArgumentException(String.format("Must be positive count = %d", count));
+        }
+        return filmStorage.readTopFilms(count);
     }
 
-    public Collection<Film> getSortedDirectorFilms(int directorId, String sortBy) {
+    public Collection<Film> getSortedDirectorFilms(Integer directorId, String sortBy) {
         switch (sortBy) {
             case "year":
-                return filmStorage.getSortedDirectorFilmsByYear(directorId, sortBy);
+                return filmStorage.readDirectorFilmsSortedByYear(directorId, sortBy);
             case "likes":
-                return filmStorage.getSortedDirectorFilmsByLikes(directorId, sortBy);
+                return filmStorage.readDirectorFilmsSortedByLikes(directorId, sortBy);
             default:
                 throw new SortRequestException(String.format("Sort must be 'year' or 'likes' sortBy = %s", sortBy));
         }

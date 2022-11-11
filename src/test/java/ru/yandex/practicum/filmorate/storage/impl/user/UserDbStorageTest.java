@@ -35,10 +35,10 @@ public class UserDbStorageTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     public void givenNewUser_whenFindUserById_thenGetUserById1() {
         //given
-        userStorage.add(user);
+        userStorage.create(user);
 
         //when
-        final User testUser = userStorage.getById(1);
+        final User testUser = userStorage.readById(1);
 
         //then
         assertThat(testUser)
@@ -61,11 +61,11 @@ public class UserDbStorageTest {
                 .birthday(BIRTHDAY)
                 .build();
 
-        userStorage.add(user);
+        userStorage.create(user);
 
         //when
         userStorage.update(updatedUser);
-        final User testUser = userStorage.getById(1);
+        final User testUser = userStorage.readById(1);
 
         //then
         assertThat(testUser)
@@ -87,11 +87,11 @@ public class UserDbStorageTest {
                 .birthday(BIRTHDAY.minusYears(5))
                 .build();
 
-        userStorage.add(user);
-        userStorage.add(testUser);
+        userStorage.create(user);
+        userStorage.create(testUser);
 
         //when
-        final Collection<User> users = userStorage.getAll();
+        final Collection<User> users = userStorage.readAll();
 
         //then
         assertNotNull(users, "Users are not returned.");

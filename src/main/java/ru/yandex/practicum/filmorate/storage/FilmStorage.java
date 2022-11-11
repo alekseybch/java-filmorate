@@ -5,13 +5,13 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.util.Collection;
 
 public interface FilmStorage extends DataStorage<Film> {
-    void addLike(int filmId, int userId);
+    void createLike(Integer filmId, Integer userId);
 
-    void deleteLike(int filmId, int userId);
+    void deleteLike(Integer filmId, Integer userId);
 
-    Collection<Film> getTopFilms(int count);
+    Collection<Film> readTopFilms(Integer count);
 
-    Collection<Film> getSortedDirectorFilmsByYear(int directorId, String sortBy);
+    Collection<Film> readDirectorFilmsSortedByYear(Integer directorId, String sortBy);
 
-    Collection<Film> getSortedDirectorFilmsByLikes(int directorId, String sortBy);
+    Collection<Film> readDirectorFilmsSortedByLikes(Integer directorId, String sortBy);
 }

@@ -18,23 +18,23 @@ import java.util.Objects;
 
 @Repository("directorDbStorage")
 @RequiredArgsConstructor
-public class directorDbStorage implements DataStorage<Director> {
-    private static final String SQL_ADD_DIRECTOR = "INSERT INTO directors (director_name) VALUES (?)";
-    private static final String SQL_UPDATE_DIRECTOR = "UPDATE directors SET director_name = ? WHERE director_id = ?";
-    private static final String SQL_DELETE_DIRECTOR = "DELETE FROM directors WHERE director_id = ?";
-    private static final String SQL_GET_DIRECTOR_BY_ID = "SELECT * FROM directors WHERE director_id = ?";
-    private static final String SQL_GET_ALL_DIRECTORS = "SELECT * FROM directors";
+public class DirectorDbStorage implements DataStorage<Director> {
+    private static final String SQL_CREATE_DIRECTOR = "insert into DIRECTORS (DIRECTOR_NAME) values (?)";
+    private static final String SQL_UPDATE_DIRECTOR = "update DIRECTORS set DIRECTOR_NAME = ? where DIRECTOR_ID = ?";
+    private static final String SQL_DELETE_DIRECTOR = "delete from DIRECTORS where DIRECTOR_ID = ?";
+    private static final String SQL_READ_DIRECTOR_BY_ID = "select * from DIRECTORS where DIRECTOR_ID = ?";
+    private static final String SQL_READ_ALL_DIRECTORS = "select * from DIRECTORS";
 
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public Collection<Director> getAll() {
-        return jdbcTemplate.query(SQL_GET_ALL_DIRECTORS, this::mapRowToDirector);
+    public Collection<Director> readAll() {
+        return jdbcTemplate.query(SQL_READ_ALL_DIRECTORS, this::mapRowToDirector);
     }
 
     @Override
-    public Director getById(int id) {
-        List<Director> directors = jdbcTemplate.query(SQL_GET_DIRECTOR_BY_ID, this::mapRowToDirector, id);
+    public Director readById(Integer id) {
+        List<Director> directors = jdbcTemplate.query(SQL_READ_DIRECTOR_BY_ID, this::mapRowToDirector, id);
         if (directors.size() != 1) {
             throw new NotFoundException(String.format("Director with id = %d not found.", id));
         }
@@ -42,11 +42,11 @@ public class directorDbStorage implements DataStorage<Director> {
     }
 
     @Override
-    public void add(Director director) {
+    public void create(Director director) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(SQL_ADD_DIRECTOR, new String[]{"director_id"});
+            PreparedStatement stmt = connection.prepareStatement(SQL_CREATE_DIRECTOR, new String[]{"director_id"});
             stmt.setString(1, director.getName());
             return stmt;
         }, keyHolder);
@@ -56,7 +56,7 @@ public class directorDbStorage implements DataStorage<Director> {
 
     @Override
     public void update(Director director) {
-        getById(director.getId());
+        readById(director.getId());
 
         jdbcTemplate.update(SQL_UPDATE_DIRECTOR,
                 director.getName(),
@@ -64,8 +64,8 @@ public class directorDbStorage implements DataStorage<Director> {
     }
 
     @Override
-    public void delete(int id) {
-        getById(id);
+    public void delete(Integer id) {
+        readById(id);
         jdbcTemplate.update(SQL_DELETE_DIRECTOR, id);
     }
 

@@ -13,13 +13,12 @@ import java.util.Set;
 @Data
 @Builder
 public class User {
-    int id;
+    private Integer id;
     @NotNull(message = "Can't be null.")
     @Size(max = 254, message = "Must not be more than 254 characters.")
     @Email(message = "Invalid format.")
     private String email;
-    @NotNull(message = "Can't be null.")
-    @NotBlank(message = "Can't be blank.")
+    @NotBlank(message = "Can't be null or blank.")
     @Size(max = 20, message = "Must not be more than 20 characters.")
     @Pattern(regexp = "[\\S]{0,}", message = "Must not contain spaces.")
     private String login;

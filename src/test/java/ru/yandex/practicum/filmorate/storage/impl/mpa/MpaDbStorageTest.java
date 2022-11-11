@@ -24,7 +24,7 @@ public class MpaDbStorageTest {
     @Test
     public void whenFindMpaById_thenGetMpaById1() {
         //when
-        final Mpa mpa = mpaStorage.getById(1);
+        final Mpa mpa = mpaStorage.readById(1);
 
         //then
         assertThat(mpa)
@@ -36,7 +36,7 @@ public class MpaDbStorageTest {
     @Test
     public void whenFindAllMpa_thenGetAllMpa() {
         //when
-        final Collection<Mpa> mpa = mpaStorage.getAll();
+        final Collection<Mpa> mpa = mpaStorage.readAll();
 
         //then
         assertNotNull(mpa, "Mpa are not returned.");

@@ -16,25 +16,25 @@ public class UserService extends AbstractService<User> {
         this.userStorage = userStorage;
     }
 
-    public void addFriend(int userId, int friendId) {
+    public void addFriend(Integer userId, Integer friendId) {
         User user = getById(userId);
         getById(friendId); // check friend
         user.addFriend(friendId);
-        userStorage.addFriend(userId, friendId);
+        userStorage.createFriend(userId, friendId);
     }
 
-    public void deleteFriend(int userId, int friendId) {
+    public void deleteFriend(Integer userId, Integer friendId) {
         User user = getById(userId);
         getById(friendId);
         user.deleteFriend(friendId);
         userStorage.deleteFriend(userId, friendId);
     }
 
-    public Collection<User> getFriends(int userId) {
-        return userStorage.getFriends(userId);
+    public Collection<User> getFriends(Integer userId) {
+        return userStorage.readFriends(userId);
     }
 
-    public Collection<User> commonFriends(int userId, int otherId) {
-        return userStorage.commonFriends(userId, otherId);
+    public Collection<User> commonFriends(Integer userId, Integer otherId) {
+        return userStorage.mutualFriends(userId, otherId);
     }
 }

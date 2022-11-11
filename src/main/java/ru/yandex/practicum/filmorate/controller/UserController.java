@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.Collection;
 
 @Slf4j
@@ -18,69 +17,69 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public Collection<User> findAll() {
-        log.info("/users GET - request received");
+    public Collection<User> findAllUsers() {
+        log.info("/users GET - request received.");
         return userService.getAll();
     }
 
     @GetMapping("/{id}")
-    public User findUser(@PathVariable int id) {
-        log.info("/users/{id} GET - request to receive a user has been received id = {}", id);
+    public User findUserById(@PathVariable Integer id) {
+        log.info("/users/{id} GET - request to receive a user has been received id = {}.", id);
         return userService.getById(id);
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> findFriends(@PathVariable int id) {
-        log.info("/users/{id}/friends GET - request to receive a friends has been received id = {}", id);
+    public Collection<User> findFriends(@PathVariable Integer id) {
+        log.info("/users/{id}/friends GET - request to receive a friends has been received id = {}.", id);
         return userService.getFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> commonFriends(@PathVariable int id,
-                                        @PathVariable int otherId) {
+    public Collection<User> commonFriends(@PathVariable Integer id,
+                                          @PathVariable Integer otherId) {
         log.info("/users/{id}/friends/common/{otherId} GET - request for common friends " +
-                "has been received id = {}, otherId = {}", id, otherId);
+                "has been received id = {}, otherId = {}.", id, otherId);
         return userService.commonFriends(id, otherId);
     }
 
     @PostMapping
-    public User create(@RequestBody @Valid @NotNull User user) {
-        log.info("/users POST - request received {}", user);
+    public User addUser(@RequestBody @Valid User user) {
+        log.info("/users POST - request received {}.", user);
         userService.add(user);
-        log.info("User id = {} is created {}", user.getId(), user);
+        log.info("User id = {} is created {}.", user.getId(), user);
         return user;
     }
 
     @PutMapping
-    public User put(@RequestBody @Valid @NotNull User user) {
-        log.info("/users PUT - request received {}", user);
+    public User updateUser(@RequestBody @Valid User user) {
+        log.info("/users PUT - request received {}.", user);
         userService.update(user);
-        log.info("User id = {} is updated {}", user.getId(), user);
+        log.info("User id = {} is updated {}.", user.getId(), user);
         return user;
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable int id,
-                          @PathVariable int friendId) {
+    public void addFriend(@PathVariable Integer id,
+                          @PathVariable Integer friendId) {
         log.info("/users/{id}/friends/{friendId} PUT - request to add " +
-                "a friend received id = {}, friendId = {}", id, friendId);
+                "a friend received id = {}, friendId = {}.", id, friendId);
         userService.addFriend(id, friendId);
-        log.info("User id = {} added friend id = {}", id, friendId);
+        log.info("User id = {} added friend id = {}.", id, friendId);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable int id) {
-        log.info("/users/{id} DELETE - request to delete id = {}", id);
+    public void deleteUser(@PathVariable Integer id) {
+        log.info("/users/{id} DELETE - request to delete id = {}.", id);
         userService.delete(id);
-        log.info("User id = {} deleted", id);
+        log.info("User id = {} deleted.", id);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public void deleteFriend(@PathVariable int id,
-                             @PathVariable int friendId) {
+    public void deleteFriend(@PathVariable Integer id,
+                             @PathVariable Integer friendId) {
         log.info("/users/{id}/friends/{friendId} DELETE - request to delete " +
-                "a friend received id = {}, friendId = {}", id, friendId);
+                "a friend received id = {}, friendId = {}.", id, friendId);
         userService.deleteFriend(id, friendId);
-        log.info("User id = {} delete friend id = {}", id, friendId);
+        log.info("User id = {} delete friend id = {}.", id, friendId);
     }
 }
